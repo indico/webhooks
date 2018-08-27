@@ -1,0 +1,7 @@
+*.swp
+.venv/
+.env
+.idea/
+*.py[co]
+*.egg-info
+__pycache__/
