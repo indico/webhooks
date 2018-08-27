@@ -12,5 +12,5 @@ setup(
     description='Indico dev webhooks',
     packages=find_packages(),
     zip_safe=False,
-    install_requires=['bleach', 'flask', 'requests', 'gunicorn'],
+    install_requires=['bleach', 'flask', 'requests', 'gunicorn', 'markupsafe'],
 )
