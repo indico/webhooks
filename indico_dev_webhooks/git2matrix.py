@@ -30,6 +30,11 @@ def matrix_post_msg(message):
 app = Flask(__name__)
 
 
+@app.route('/ping')
+def ping():
+    return '', 204
+
+
 @app.route('/github')
 def webhook_github():
     extra = markupsafe.escape(request.json['msg'])
