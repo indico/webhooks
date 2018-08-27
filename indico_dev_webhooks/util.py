@@ -43,7 +43,6 @@ class Formatter:
 
 
 def shorten_url(url):
-    return 'https://git.io/DUMMY'  # TODO remove this
     try:
         req = requests.post('https://git.io', data={'url': url}, allow_redirects=False)
     except requests.RequestException:
