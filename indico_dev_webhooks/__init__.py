@@ -8,6 +8,7 @@ from .git2matrix import bp as git2matrix_bp
 
 def configure_app(app):
     try:
+        app.config['GITHUB_SECRET'] = os.environ['GITHUB_SECRET']
         app.config['MATRIX_TOKEN'] = os.environ['MATRIX_TOKEN']
         app.config['MATRIX_CHANNEL'] = os.environ['MATRIX_CHANNEL']
     except KeyError as exc:

@@ -1,9 +1,11 @@
+import hashlib
+import hmac
 import time
 
 import bleach
-import markupsafe
 import requests
 from flask import Blueprint, current_app, jsonify, request
+from werkzeug.exceptions import Forbidden
 
 
 bp = Blueprint('git2matrix', __name__)
@@ -22,8 +24,20 @@ def matrix_post_msg(message):
     requests.put(url, params={'access_token': token}, json=payload).raise_for_status()
 
 
-@bp.route('/github')
+def verify_github_signature():
+    signature = request.headers.get('X-Hub-Signature', '')
+    data = request.get_data()
+    github_secret = bytes(current_app.config['GITHUB_SECRET'], 'UTF-8')
+    mac = hmac.new(github_secret, msg=data, digestmod=hashlib.sha1).hexdigest()
+    return hmac.compare_digest(f'sha1={mac}', signature)
+
+
+@bp.route('/github', methods=('POST',))
 def webhook_github():
-    extra = markupsafe.escape(request.json['msg'])
-    matrix_post_msg(f'This is just a <font color="red">test</font> - {extra}')
+    if not verify_github_signature():
+        raise Forbidden('Signature invalid')
+    if request.headers.get('X-GitHub-Event') == 'ping':
+        print('ping', request.json)
+    elif request.headers.get('X-GitHub-Event') == 'push':
+        print('push', request.json)
     return jsonify()
