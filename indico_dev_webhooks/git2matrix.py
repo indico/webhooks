@@ -127,7 +127,9 @@ def github_push(payload):
 
     messages = [f'{irc_push_summary_message()}: {fmt.url(url)}']
     messages += [irc_format_commit_message(c) for c in distinct_commits[:3]]
-    for message in messages:
+    for i, message in enumerate(messages):
+        if i > 0:
+            time.sleep(0.25)
         matrix_post_msg(message)
 
 
