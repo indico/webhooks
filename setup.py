@@ -12,5 +12,5 @@ setup(
     description='Indico dev webhooks',
     packages=find_packages(),
     zip_safe=False,
-    install_requires=['flask', 'requests', 'gunicorn', 'markupsafe'],
+    install_requires=['flask', 'gunicorn', 'markupsafe', 'matrix-client'],
 )

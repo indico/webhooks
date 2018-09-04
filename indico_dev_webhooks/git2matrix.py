@@ -1,10 +1,9 @@
 import hashlib
 import hmac
 import re
-import time
 
-import requests
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, g, jsonify, request
+from matrix_client.api import MatrixHttpApi
 from werkzeug.exceptions import Forbidden
 
 from .util import Formatter, shorten_url
@@ -14,19 +13,24 @@ bp = Blueprint('git2matrix', __name__)
 fmt = Formatter()
 
 
+def _get_matrix():
+    try:
+        return g.matrix
+    except AttributeError:
+        g.matrix = MatrixHttpApi('https://matrix.org', token=current_app.config['MATRIX_TOKEN'])
+        return g.matrix
+
+
 def matrix_post_msg(message):
     message_text = Formatter.strip(message)
     channel = current_app.config['MATRIX_CHANNEL']
-    token = current_app.config['MATRIX_TOKEN']
-    url = f'https://matrix.org/_matrix/client/r0/rooms/{channel}/send/m.room.message/f{int(time.time())}'
     payload = {
         'msgtype': 'm.text',
         'body': message_text,
         'format': 'org.matrix.custom.html',
         'formatted_body': message,
     }
-    req = requests.put(url, params={'access_token': token}, json=payload)
-    req.raise_for_status()
+    _get_matrix().send_message_event(channel, 'm.room.message', payload)
 
 
 def verify_github_signature():
@@ -127,9 +131,7 @@ def github_push(payload):
 
     messages = [f'{irc_push_summary_message()}: {fmt.url(url)}']
     messages += [irc_format_commit_message(c) for c in distinct_commits[:3]]
-    for i, message in enumerate(messages):
-        if i > 0:
-            time.sleep(0.25)
+    for message in messages:
         matrix_post_msg(message)
 
 
